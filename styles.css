@@ -106,10 +106,10 @@ h1,h2,h3,.brand-mark{font-family:'Sora',sans-serif;letter-spacing:-.02em}
 .hero-static{display:none}
 
 /* moedas decorativas */
-.hero-deco{position:absolute;inset:-30px -10px 0 -10px;z-index:1;pointer-events:none;overflow:visible}
-.coin{position:absolute;opacity:.85;will-change:transform}
-.coin-a{top:-18px;right:2%;width:62%;animation:floatY 7s ease-in-out infinite}
-.coin-b{bottom:8px;left:-4%;width:52%;opacity:.7;animation:floatY 9s ease-in-out infinite reverse}
+.hero-deco{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;border-radius:16px}
+.coin{position:absolute;opacity:.7}
+.coin-a{top:6px;right:-2%;width:44%}
+.coin-b{bottom:2px;left:-3%;width:36%;opacity:.5}
 
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
