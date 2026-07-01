@@ -107,9 +107,10 @@ h1,h2,h3,.brand-mark{font-family:'Sora',sans-serif;letter-spacing:-.02em}
 
 /* moedas decorativas */
 .hero-deco{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;border-radius:16px}
-.coin{position:absolute;opacity:.7}
-.coin-a{top:6px;right:-2%;width:44%}
-.coin-b{bottom:2px;left:-3%;width:36%;opacity:.5}
+.coin{position:absolute;opacity:.7;will-change:transform}
+.coin-a{top:10px;right:-2%;width:44%;animation:floatSoft 6s ease-in-out infinite}
+.coin-b{bottom:8px;left:-3%;width:36%;opacity:.5;animation:floatSoft 7.5s ease-in-out infinite reverse}
+@keyframes floatSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
@@ -245,6 +246,8 @@ h1,h2,h3,.brand-mark{font-family:'Sora',sans-serif;letter-spacing:-.02em}
 .foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:48px;padding-top:22px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);font-family:'Sora';font-weight:600}
 .foot-brand{display:flex;align-items:center;gap:9px;color:var(--text)}
 .brand-logo-foot{height:17px;width:auto;display:block}
+.foot-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
+.foot-sign{font-family:'Sora';font-weight:700;font-size:13px;color:var(--green)}
 
 /* RESPONSIVO */
 @media(max-width:880px){
