@@ -56,7 +56,7 @@ Chart.defaults.color = C.muted;
 // ---- Estado -------------------------------------------------------------
 let RAW = [];          // [{date:Date, dateStr, service, sentiment, tags:[]}]
 let charts = {};       // instâncias Chart.js
-const filters = { channels: new Set(), sentiments: new Set(), from: null, to: null };
+const filters = { channels: new Set(), sentiments: new Set(), from: null, to: null, tag: "" };
 
 // =========================================================================
 // Utils
@@ -167,6 +167,12 @@ function initFilters() {
       filters.from = minD; filters.to = maxD; render();
     };
 
+    // filtro de demanda (tag)
+    const allTags = [...new Set(RAW.flatMap((r) => r.tags))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    const tagEl = document.getElementById("tagFilter");
+    tagEl.innerHTML = `<option value="">Todas as demandas</option>` + allTags.map((t) => `<option value="${t}">${t}</option>`).join("");
+    tagEl.onchange = () => { filters.tag = tagEl.value; render(); };
+
     chCont.dataset.built = "1";
   }
   syncChipClasses();
@@ -210,6 +216,7 @@ function applyFilters(rows, { ignoreChannel = false } = {}) {
     if (filters.sentiments.size && !filters.sentiments.has(r.sentiment)) return false;
     if (filters.from && r.date < filters.from) return false;
     if (filters.to && r.date > filters.to) return false;
+    if (filters.tag && !r.tags.includes(filters.tag)) return false;
     return true;
   });
 }
