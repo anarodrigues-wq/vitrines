@@ -175,6 +175,24 @@ h1,h2,h3,.brand-mark{font-family:'Sora',sans-serif;letter-spacing:-.02em}
 .chart-box{position:relative;height:300px}
 .chart-box.tall{height:430px}
 
+/* HEATMAP TOP 3 x CANAIS */
+.heatmap-card{overflow-x:auto}
+.hm-wrap{display:grid;gap:8px;align-items:stretch;min-width:480px}
+.hm-head{
+  font-family:'Sora';font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);display:flex;align-items:center;padding:0 6px 6px;
+}
+.hm-rowlabel{
+  font-family:'Sora';font-size:13.5px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;padding-right:12px;line-height:1.25;
+}
+.hm-cell{
+  border-radius:12px;min-height:66px;display:flex;align-items:center;justify-content:center;
+  font-family:'Sora';font-weight:700;font-size:19px;cursor:default;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.hm-cell:hover{transform:scale(1.045);box-shadow:0 8px 22px rgba(0,0,0,.55);position:relative;z-index:2}
+
 /* TOP 10 POR CANAL */
 .section-head{margin:38px 0 18px}
 .section-head h2{font-size:21px;font-weight:700}

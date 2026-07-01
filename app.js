@@ -231,8 +231,39 @@ function render() {
   renderSentiment(rows);
   renderChannel(rows);
   renderTimeline(rows);
+  renderHeatmap();       // top 3 demandas x canais
   renderChannelGrid();   // usa filtro de período/sentimento, todos os canais
   renderActionPlan(rows);
+}
+
+// heatmap: top 3 demandas (linhas) x canais (colunas), cor = volume
+function renderHeatmap() {
+  const base = applyFilters(RAW, { ignoreChannel: true });
+  const present = CHANNELS.filter((c) => base.some((r) => r.service === c.key));
+  const top3 = tagCounts(base).slice(0, 3);
+  const cont = document.getElementById("heatmap");
+  if (!top3.length || !present.length) { cont.innerHTML = `<p class="status-msg">Sem dados no recorte atual.</p>`; return; }
+
+  const matrix = top3.map(([tag]) => present.map((c) => base.filter((r) => r.service === c.key && r.tags.includes(tag)).length));
+  const max = Math.max(...matrix.flat(), 1);
+
+  cont.style.gridTemplateColumns = `minmax(120px,1.5fr) repeat(${present.length},1fr)`;
+  let html = `<div class="hm-corner"></div>`;
+  present.forEach((c) => { html += `<div class="hm-head">${c.label}</div>`; });
+  top3.forEach(([tag], i) => {
+    html += `<div class="hm-rowlabel">${tag}</div>`;
+    present.forEach((c, j) => {
+      const v = matrix[i][j];
+      const t = v / max;
+      html += `<div class="hm-cell" style="background:${heatColor(t)};color:${t > 0.5 ? "#0a0a0a" : "#c7d4b8"}" title="${tag} · ${c.label}: ${fmtNum(v)}">${fmtNum(v)}</div>`;
+    });
+  });
+  cont.innerHTML = html;
+}
+function heatColor(t) {
+  const l = 9 + t * 46;   // lightness 9%..55%
+  const s = 65 + t * 35;  // saturation 65%..100%
+  return `hsl(84, ${s}%, ${l}%)`;
 }
 
 function renderKPIs(rows) {
