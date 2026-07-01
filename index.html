@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NG.cash · Dashboard de Demandas</title>
+  <meta name="description" content="Dashboard de demandas das redes sociais e lojas — NG.cash" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Fontes da identidade NG.cash -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <a class="brand-logo" href="https://www.ng.cash/" target="_blank" rel="noopener" aria-label="NG.cash">
+        <svg viewBox="0 0 36 23" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img">
+          <path d="M35.4099 19.2554H32.1533V22.5048H35.4099V19.2554Z"/>
+          <path d="M28.7196 22.5042L28.4 5.22902H22.0765V7.76395H25.9062L26.1175 19.1861L18.0036 10.3805L17.2547 2.53249H21.9248V-0.00244141H14.4614L15.5555 11.4686L25.7237 22.5042H28.7196Z"/>
+          <path d="M11.9637 22.5042H14.5279L11.4475 -0.00439453H6.54785L2.74189 10.1956V-0.00439453H0.201416V16.507H3.09776L8.31259 2.53054H9.23249L11.9637 22.5042Z"/>
+        </svg>
+      </a>
+      <span class="brand-sep">/</span>
+      <span class="brand-sub">Dashboard de Demandas</span>
+    </div>
+    <div class="topbar-right">
+      <span id="lastUpdate" class="last-update">carregando…</span>
+      <button id="refreshBtn" class="btn-refresh" title="Atualizar dados">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Atualizar</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-deco" aria-hidden="true">
+        <img src="assets/coins-green-1.webp" class="coin coin-a" alt="" />
+        <img src="assets/coins-green-2.webp" class="coin coin-b" alt="" />
+      </div>
+      <div class="hero-text">
+        <span class="hero-badge">● Social &amp; Stores · NG.cash</span>
+        <h1>Demandas das redes sociais &amp; lojas</h1>
+        <p class="hero-sub">Análise dos comentários classificados na Buzzmonitor — Instagram, TikTok, Play Store e App Store. Dados em tempo real direto da planilha.</p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="phone-glow"></div>
+        <img src="assets/app-overview.gif" class="hero-gif" alt="App NG.cash" loading="lazy" />
+        <img src="assets/phone-card.webp" class="hero-static" alt="App e cartão NG.cash" loading="lazy" />
+      </div>
+    </section>
+
+    <!-- Filtros -->
+    <section class="filters" id="filters">
+      <div class="filter-group">
+        <label class="filter-label">Canal</label>
+        <div class="chips" id="channelChips"></div>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Sentimento</label>
+        <div class="chips" id="sentimentChips"></div>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Período</label>
+        <div class="date-range">
+          <input type="date" id="dateFrom" class="date-input" />
+          <span class="date-arrow">→</span>
+          <input type="date" id="dateTo" class="date-input" />
+          <button id="resetDates" class="btn-ghost" title="Limpar período">limpar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="kpis" id="kpis"></section>
+
+    <!-- Loading / erro -->
+    <div id="statusMsg" class="status-msg"></div>
+
+    <!-- Gráficos principais -->
+    <section class="grid">
+      <div class="card span-2">
+        <div class="card-head">
+          <h2>Top demandas <span class="muted">(filtro aplicado)</span></h2>
+          <p class="card-desc">Tags de demanda reais — tags automáticas do sistema já removidas.</p>
+        </div>
+        <div class="chart-box tall"><canvas id="chartTopDemands"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Sentimento</h2><p class="card-desc">Distribuição dos comentários.</p></div>
+        <div class="chart-box"><canvas id="chartSentiment"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Volume por canal</h2><p class="card-desc">De onde chegam os comentários.</p></div>
+        <div class="chart-box"><canvas id="chartChannel"></canvas></div>
+      </div>
+
+      <div class="card span-2">
+        <div class="card-head"><h2>Volume ao longo do tempo</h2><p class="card-desc">Comentários por dia no período.</p></div>
+        <div class="chart-box"><canvas id="chartTimeline"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Top 10 por canal -->
+    <section class="section-head">
+      <h2>Top 10 demandas por canal</h2>
+      <p class="card-desc">Um ranking dedicado para cada serviço. Respeita os filtros de sentimento e período (não o de canal).</p>
+    </section>
+    <section class="grid grid-channels" id="channelGrid"></section>
+
+    <!-- Plano de ação -->
+    <section class="section-head">
+      <h2>Plano de ação · Top 3 motivos críticos</h2>
+      <p class="card-desc">Demandas de maior volume que representam problema real (elogios, curtidas e "sem demanda" excluídos do ranking). Recalculado conforme os filtros.</p>
+    </section>
+    <section class="action-plan" id="actionPlan"></section>
+
+    <footer class="foot">
+      <span class="foot-brand">
+        <svg class="brand-logo-foot" viewBox="0 0 36 23" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NG.cash"><path d="M35.4099 19.2554H32.1533V22.5048H35.4099V19.2554Z"/><path d="M28.7196 22.5042L28.4 5.22902H22.0765V7.76395H25.9062L26.1175 19.1861L18.0036 10.3805L17.2547 2.53249H21.9248V-0.00244141H14.4614L15.5555 11.4686L25.7237 22.5042H28.7196Z"/><path d="M11.9637 22.5042H14.5279L11.4475 -0.00439453H6.54785L2.74189 10.1956V-0.00439453H0.201416V16.507H3.09776L8.31259 2.53054H9.23249L11.9637 22.5042Z"/></svg>
+        <span>Social &amp; Stores</span>
+      </span>
+      <span class="muted">Fonte: Buzzmonitor → Google Sheets · atualização em tempo real</span>
+    </footer>
+  </main>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
