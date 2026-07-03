@@ -94,7 +94,13 @@ async function loadData() {
     RAW = parsed.data
       .map((r) => {
         const d = parseDate(r["Data"]);
-        const tagsRaw = (r["Tags"] || "").split(",").map((t) => t.trim()).filter(Boolean);
+        // A coluna Tags vem em 2 formatos: "tag1,tag2" ou ["tag1", "tag2"].
+        // Removemos colchetes e aspas para normalizar antes de filtrar.
+        const tagsRaw = (r["Tags"] || "")
+          .replace(/[\[\]]/g, "")
+          .split(",")
+          .map((t) => t.trim().replace(/^["']+|["']+$/g, "").trim())
+          .filter(Boolean);
         const tags = tagsRaw.filter((t) => !EXCLUDED_TAGS.has(t.toLowerCase()));
         return {
           date: d,
