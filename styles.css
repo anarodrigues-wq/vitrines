@@ -142,15 +142,39 @@ h1,h2,h3,.brand-mark{font-family:'Sora',sans-serif;letter-spacing:-.02em}
   color-scheme:dark;
 }
 .date-input:focus{outline:none;border-color:var(--green)}
-.select-input{
+/* multi-select de demandas */
+.ms{position:relative}
+.ms-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
   background:var(--bg-2);border:1px solid var(--line);color:var(--text);
-  font-family:'IBM Plex Sans';font-size:13px;padding:8px 32px 8px 12px;border-radius:10px;
-  color-scheme:dark;cursor:pointer;min-width:190px;max-width:230px;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238f8f8f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 11px center;
+  font-family:'IBM Plex Sans';font-size:13px;padding:8px 12px;border-radius:10px;cursor:pointer;
+  min-width:200px;max-width:240px;transition:border-color .15s ease;
 }
-.select-input:focus{outline:none;border-color:var(--green)}
-.select-input option{background:var(--card);color:var(--text)}
+.ms-btn:hover{border-color:#444}
+.ms-btn.ms-active{border-color:var(--green);color:var(--green)}
+.ms-btn.ms-active .ms-caret{color:var(--green)}
+.ms-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-caret{color:var(--muted);flex-shrink:0}
+.ms-panel{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:60;
+  width:280px;max-width:82vw;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--shadow);padding:10px;
+}
+.ms-search{
+  width:100%;background:var(--bg-2);border:1px solid var(--line);color:var(--text);
+  font-family:'IBM Plex Sans';font-size:13px;padding:7px 10px;border-radius:8px;margin-bottom:8px;
+}
+.ms-search:focus{outline:none;border-color:var(--green)}
+.ms-list{max-height:258px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.ms-opt{
+  display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;
+  font-size:13px;color:var(--text);user-select:none;
+}
+.ms-opt:hover{background:var(--bg-2)}
+.ms-opt input{accent-color:var(--green);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.ms-all{border-bottom:1px solid var(--line);border-radius:0;margin-bottom:6px;padding-bottom:10px;font-weight:700;font-family:'Sora'}
+.ms-list::-webkit-scrollbar{width:8px}
+.ms-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
 .date-arrow{color:var(--muted-2)}
 .btn-ghost{
   background:transparent;border:1px solid var(--line);color:var(--muted);

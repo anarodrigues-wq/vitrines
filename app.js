@@ -56,7 +56,8 @@ Chart.defaults.color = C.muted;
 // ---- Estado -------------------------------------------------------------
 let RAW = [];          // [{date:Date, dateStr, service, sentiment, tags:[]}]
 let charts = {};       // instâncias Chart.js
-const filters = { channels: new Set(), sentiments: new Set(), from: null, to: null, tag: "" };
+const filters = { channels: new Set(), sentiments: new Set(), from: null, to: null, tags: new Set() };
+let TAG_LIST = []; // todas as demandas distintas
 
 // =========================================================================
 // Utils
@@ -173,11 +174,7 @@ function initFilters() {
       filters.from = minD; filters.to = maxD; render();
     };
 
-    // filtro de demanda (tag)
-    const allTags = [...new Set(RAW.flatMap((r) => r.tags))].sort((a, b) => a.localeCompare(b, "pt-BR"));
-    const tagEl = document.getElementById("tagFilter");
-    tagEl.innerHTML = `<option value="">Todas as demandas</option>` + allTags.map((t) => `<option value="${t}">${t}</option>`).join("");
-    tagEl.onchange = () => { filters.tag = tagEl.value; render(); };
+    buildTagFilter();
 
     chCont.dataset.built = "1";
   }
@@ -215,6 +212,64 @@ function syncChipClasses() {
   });
 }
 
+// --- multi-select de demandas (checkboxes) ---
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function buildTagFilter() {
+  TAG_LIST = [...new Set(RAW.flatMap((r) => r.tags))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  filters.tags = new Set(TAG_LIST); // começa com todas marcadas
+
+  const wrap = document.getElementById("tagMulti");
+  const btn = document.getElementById("tagMultiBtn");
+  const panel = document.getElementById("tagMultiPanel");
+  const list = document.getElementById("tagList");
+  const allCb = document.getElementById("tagAll");
+  const search = document.getElementById("tagSearch");
+
+  list.innerHTML = TAG_LIST.map((t, i) =>
+    `<label class="ms-opt"><input type="checkbox" class="ms-cb" data-i="${i}" checked /><span>${escapeHtml(t)}</span></label>`
+  ).join("");
+
+  const closePanel = () => { panel.setAttribute("hidden", ""); btn.setAttribute("aria-expanded", "false"); };
+  const openPanel = () => { panel.removeAttribute("hidden"); btn.setAttribute("aria-expanded", "true"); search.focus(); };
+  btn.onclick = (e) => { e.stopPropagation(); panel.hasAttribute("hidden") ? openPanel() : closePanel(); };
+  document.addEventListener("click", (e) => { if (!wrap.contains(e.target)) closePanel(); });
+  panel.addEventListener("click", (e) => e.stopPropagation());
+
+  list.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("ms-cb")) return;
+    const t = TAG_LIST[+e.target.dataset.i];
+    if (e.target.checked) filters.tags.add(t); else filters.tags.delete(t);
+    updateTagUI(); render();
+  });
+  allCb.onchange = () => {
+    filters.tags = allCb.checked ? new Set(TAG_LIST) : new Set();
+    updateTagUI(); render();
+  };
+  search.oninput = () => {
+    const q = search.value.trim().toLowerCase();
+    list.querySelectorAll(".ms-opt").forEach((opt) => {
+      opt.style.display = opt.textContent.trim().toLowerCase().includes(q) ? "" : "none";
+    });
+  };
+  updateTagUI();
+}
+function updateTagUI() {
+  const total = TAG_LIST.length, n = filters.tags.size;
+  const allCb = document.getElementById("tagAll");
+  allCb.checked = n === total;
+  allCb.indeterminate = n > 0 && n < total;
+  document.querySelectorAll("#tagList .ms-cb").forEach((cb) => { cb.checked = filters.tags.has(TAG_LIST[+cb.dataset.i]); });
+  const label = document.getElementById("tagMultiLabel");
+  const btn = document.getElementById("tagMultiBtn");
+  label.textContent = n === total ? "Todas as demandas"
+    : n === 0 ? "Nenhuma demanda"
+    : n === 1 ? [...filters.tags][0]
+    : `${n} demandas selecionadas`;
+  btn.classList.toggle("ms-active", n !== total);
+}
+
 // rows que passam por todos os filtros
 function applyFilters(rows, { ignoreChannel = false } = {}) {
   return rows.filter((r) => {
@@ -222,7 +277,10 @@ function applyFilters(rows, { ignoreChannel = false } = {}) {
     if (filters.sentiments.size && !filters.sentiments.has(r.sentiment)) return false;
     if (filters.from && r.date < filters.from) return false;
     if (filters.to && r.date > filters.to) return false;
-    if (filters.tag && !r.tags.includes(filters.tag)) return false;
+    // demandas: se todas selecionadas => sem filtro; senão exige >=1 tag marcada
+    if (TAG_LIST.length && filters.tags.size !== TAG_LIST.length) {
+      if (!r.tags.some((t) => filters.tags.has(t))) return false;
+    }
     return true;
   });
 }
