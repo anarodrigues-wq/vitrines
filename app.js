@@ -287,8 +287,12 @@ function applyFilters(rows, { ignoreChannel = false } = {}) {
 
 // conta tags de demanda numa lista de rows
 function tagCounts(rows) {
+  const all = !TAG_LIST.length || filters.tags.size === TAG_LIST.length; // todas marcadas
   const m = new Map();
-  rows.forEach((r) => r.tags.forEach((t) => m.set(t, (m.get(t) || 0) + 1)));
+  rows.forEach((r) => r.tags.forEach((t) => {
+    if (!all && !filters.tags.has(t)) return; // ignora demandas desmarcadas
+    m.set(t, (m.get(t) || 0) + 1);
+  }));
   return [...m.entries()].sort((a, b) => b[1] - a[1]);
 }
 
