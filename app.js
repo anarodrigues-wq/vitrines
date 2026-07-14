@@ -88,9 +88,9 @@ const doughnutDL = {
   display: true, textAlign: "center",
   anchor: (ctx) => (sliceSmall(ctx) ? "end" : "center"),
   align: (ctx) => (sliceSmall(ctx) ? "end" : "center"),
-  offset: (ctx) => (sliceSmall(ctx) ? 8 : 0),
+  offset: (ctx) => (sliceSmall(ctx) ? 6 : 0),
   color: (ctx) => (sliceSmall(ctx) ? C.text : (hexLum(ctx.dataset.backgroundColor[ctx.dataIndex]) > 0.5 ? "#0a0a0a" : "#ffffff")),
-  font: { family: "Sora", weight: 700, size: 12 },
+  font: { family: "Sora", weight: 700, size: 10 },
   formatter: (v, ctx) => { const tot = ctx.dataset.data.reduce((a, b) => a + b, 0) || 1; const p = (v / tot) * 100; return `${fmtNum(v)}\n${p < 1 ? "<1%" : Math.round(p) + "%"}`; },
 };
 
@@ -548,7 +548,7 @@ function renderSentiment(rows) {
   charts.sentiment = new Chart(document.getElementById("chartSentiment"), {
     type: "doughnut",
     data: { labels: SENTIMENTS.map((s) => s.key), datasets: [{ data, backgroundColor: SENTIMENTS.map((s) => s.color), borderColor: "#181818", borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", layout: { padding: 26 }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "58%", layout: { padding: 30 }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
   });
 }
 
@@ -558,7 +558,7 @@ function renderChannel(rows) {
   charts.channel = new Chart(document.getElementById("chartChannel"), {
     type: "doughnut",
     data: { labels: counts.map((x) => x.c.label), datasets: [{ data: counts.map((x) => x.n), backgroundColor: counts.map((x) => x.c.color), borderColor: "#181818", borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", layout: { padding: 26 }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "58%", layout: { padding: 30 }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
   });
 }
 
