@@ -52,8 +52,11 @@ const C = {
 };
 Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
 Chart.defaults.color = C.muted;
-// rótulos de dados sempre visíveis (plugin auto-registrado): desligado por padrão, ligado por gráfico
-if (window.ChartDataLabels) Chart.defaults.set("plugins.datalabels", { display: false });
+// rótulos de dados sempre visíveis: registra o plugin e desliga por padrão (ligado por gráfico)
+if (window.ChartDataLabels) {
+  Chart.register(window.ChartDataLabels);
+  Chart.defaults.set("plugins.datalabels", { display: false });
+}
 
 function hexLum(c) {
   let r, g, b;
