@@ -460,7 +460,7 @@ function renderTopDemands(rows) {
       labels: top.map((t) => t[0]),
       datasets: [{
         data: top.map((t) => t[1]),
-        backgroundColor: top.map((_, i) => (i === 0 ? C.green : i === 1 ? C.purple : "rgba(112,255,0,.55)")),
+        backgroundColor: C.green,
         borderRadius: 6, borderSkipped: false, barThickness: "flex", maxBarThickness: 22,
       }],
     },
