@@ -375,6 +375,53 @@ const stackTotalPlugin = {
   },
 };
 
+// rótulos dos segmentos: dentro quando cabe; fora (com linha-guia) quando o segmento é fino
+const monthlySegLabels = {
+  id: "monthlySegLabels",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = "700 10.5px Sora";
+    ctx.textBaseline = "middle";
+    const n = chart.getDatasetMeta(0).data.length;
+    for (let i = 0; i < n; i++) {
+      const segs = [];
+      let cx = 0, bw = 0;
+      chart.data.datasets.forEach((ds, di) => {
+        if (!chart.isDatasetVisible(di)) return;
+        const v = ds.data[i] || 0; if (!v) return;
+        const el = chart.getDatasetMeta(di).data[i];
+        const p = el.getProps(["x", "y", "base", "width"], true);
+        cx = p.x; bw = p.width;
+        segs.push({ v, yc: (p.y + p.base) / 2, h: Math.abs(p.base - p.y), color: ds.backgroundColor });
+      });
+      const outside = [];
+      segs.forEach((s) => {
+        if (s.h >= 16) {
+          ctx.fillStyle = hexLum(s.color) > 0.5 ? "#0a0a0a" : "#ffffff";
+          ctx.textAlign = "center";
+          ctx.fillText(fmtNum(s.v), cx, s.yc);
+        } else outside.push(s);
+      });
+      if (outside.length) {
+        const rightX = cx + bw / 2 + 9;
+        outside.sort((a, b) => a.yc - b.yc);
+        let prev = -Infinity;
+        outside.forEach((s) => { s.ty = Math.max(s.yc, prev + 13); prev = s.ty; });
+        outside.forEach((s) => {
+          ctx.strokeStyle = "rgba(255,255,255,.28)"; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(cx + bw / 2, s.yc); ctx.lineTo(rightX - 3, s.ty); ctx.stroke();
+          ctx.fillStyle = s.color;
+          ctx.beginPath(); ctx.arc(cx + bw / 2, s.yc, 2.4, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = C.text; ctx.textAlign = "left";
+          ctx.fillText(fmtNum(s.v), rightX, s.ty);
+        });
+      }
+    }
+    ctx.restore();
+  },
+};
+
 // top 5 demandas empilhadas por mes
 function renderMonthly(rows) {
   const monthDate = new Map(); // 'YYYY-MM' -> Date (para rotulo)
@@ -411,19 +458,14 @@ function renderMonthly(rows) {
       plugins: {
         legend: { position: "bottom", labels: { color: C.text, usePointStyle: true, pointStyle: "circle", padding: 14, font: { size: 12 } } },
         tooltip: { ...tt(), callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } },
-        datalabels: {
-          display: "auto",
-          color: (ctx) => (hexLum(ctx.dataset.backgroundColor) > 0.5 ? "#0a0a0a" : "#ffffff"),
-          font: { family: "Sora", weight: 700, size: 10.5 },
-          formatter: (v) => (v > 0 ? fmtNum(v) : ""),
-        },
+        datalabels: { display: false },
       },
       scales: {
         x: { stacked: true, grid: { display: false }, ticks: { color: C.muted } },
         y: { stacked: true, grid: { color: C.grid }, ticks: { precision: 0 }, beginAtZero: true },
       },
     },
-    plugins: [stackTotalPlugin],
+    plugins: [stackTotalPlugin, monthlySegLabels],
   });
 }
 
