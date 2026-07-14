@@ -548,7 +548,7 @@ function renderSentiment(rows) {
   charts.sentiment = new Chart(document.getElementById("chartSentiment"), {
     type: "doughnut",
     data: { labels: SENTIMENTS.map((s) => s.key), datasets: [{ data, backgroundColor: SENTIMENTS.map((s) => s.color), borderColor: "#181818", borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: "58%", layout: { padding: 30 }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "58%", layout: { padding: { top: 40, bottom: 6, left: 22, right: 22 } }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
   });
 }
 
@@ -558,7 +558,7 @@ function renderChannel(rows) {
   charts.channel = new Chart(document.getElementById("chartChannel"), {
     type: "doughnut",
     data: { labels: counts.map((x) => x.c.label), datasets: [{ data: counts.map((x) => x.n), backgroundColor: counts.map((x) => x.c.color), borderColor: "#181818", borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: "58%", layout: { padding: 30 }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "58%", layout: { padding: { top: 40, bottom: 6, left: 22, right: 22 } }, plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
   });
 }
 
