@@ -52,6 +52,22 @@ const C = {
 };
 Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
 Chart.defaults.color = C.muted;
+// rótulos de dados sempre visíveis (plugin auto-registrado): desligado por padrão, ligado por gráfico
+if (window.ChartDataLabels) Chart.defaults.set("plugins.datalabels", { display: false });
+
+function hexLum(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+}
+// rótulo no fim das barras horizontais
+const barDL = { display: true, anchor: "end", align: "end", offset: 4, clamp: false, color: C.text, font: { family: "Sora", weight: 700, size: 11 }, formatter: (v) => fmtNum(v) };
+// rótulo dentro das fatias (valor + %)
+const doughnutDL = {
+  display: "auto", textAlign: "center",
+  color: (ctx) => (hexLum(ctx.dataset.backgroundColor[ctx.dataIndex]) > 0.5 ? "#0a0a0a" : "#ffffff"),
+  font: { family: "Sora", weight: 700, size: 12 },
+  formatter: (v, ctx) => { const tot = ctx.dataset.data.reduce((a, b) => a + b, 0) || 1; const p = Math.round((v / tot) * 100); return p >= 6 ? `${fmtNum(v)}\n${p}%` : fmtNum(v); },
+};
 
 // ---- Estado -------------------------------------------------------------
 let RAW = [];          // [{date:Date, dateStr, service, sentiment, tags:[]}]
@@ -375,7 +391,8 @@ function renderTopDemands(rows) {
     },
     options: {
       indexAxis: "y", responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: tt() },
+      layout: { padding: { right: 46 } },
+      plugins: { legend: { display: false }, tooltip: tt(), datalabels: barDL },
       scales: {
         x: { grid: { color: C.grid }, ticks: { precision: 0 } },
         y: { grid: { display: false }, ticks: { color: C.text, font: { size: 12 } } },
@@ -390,7 +407,7 @@ function renderSentiment(rows) {
   charts.sentiment = new Chart(document.getElementById("chartSentiment"), {
     type: "doughnut",
     data: { labels: SENTIMENTS.map((s) => s.key), datasets: [{ data, backgroundColor: SENTIMENTS.map((s) => s.color), borderColor: "#181818", borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: legendBottom(), tooltip: tt(true) } },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
   });
 }
 
@@ -400,7 +417,7 @@ function renderChannel(rows) {
   charts.channel = new Chart(document.getElementById("chartChannel"), {
     type: "doughnut",
     data: { labels: counts.map((x) => x.c.label), datasets: [{ data: counts.map((x) => x.n), backgroundColor: counts.map((x) => x.c.color), borderColor: "#181818", borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: legendBottom(), tooltip: tt(true) } },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: legendBottom(), tooltip: tt(true), datalabels: doughnutDL } },
   });
 }
 
@@ -470,7 +487,8 @@ function renderChannelGrid() {
       },
       options: {
         indexAxis: "y", responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: tt() },
+        layout: { padding: { right: 42 } },
+        plugins: { legend: { display: false }, tooltip: tt(), datalabels: { ...barDL, font: { family: "Sora", weight: 700, size: 10.5 } } },
         scales: { x: { grid: { color: C.grid }, ticks: { precision: 0 } }, y: { grid: { display: false }, ticks: { color: C.text, font: { size: 11.5 } } } },
       },
     });
