@@ -55,12 +55,29 @@ Chart.defaults.color = C.muted;
 // rótulos de dados sempre visíveis (plugin auto-registrado): desligado por padrão, ligado por gráfico
 if (window.ChartDataLabels) Chart.defaults.set("plugins.datalabels", { display: false });
 
-function hexLum(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+function hexLum(c) {
+  let r, g, b;
+  if (c[0] === "#") { const n = parseInt(c.slice(1), 16); r = (n >> 16) & 255; g = (n >> 8) & 255; b = n & 255; }
+  else { const m = (c.match(/\d+/g) || [0, 0, 0]).map(Number); [r, g, b] = m; }
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 }
-// rótulo no fim das barras horizontais
-const barDL = { display: true, anchor: "end", align: "end", offset: 4, clamp: false, color: C.text, font: { family: "Sora", weight: 700, size: 11 }, formatter: (v) => fmtNum(v) };
+// a barra é larga o bastante para caber o número dentro?
+const barFits = (ctx) => {
+  const x = ctx.chart.scales.x;
+  if (!x) return true;
+  const v = ctx.dataset.data[ctx.dataIndex] || 0;
+  return Math.abs(x.getPixelForValue(v) - x.getPixelForValue(0)) >= 42;
+};
+// rótulo DENTRO da barra quando cabe (texto escuro/claro por contraste); nas barras muito curtas, logo à direita
+const barDL = {
+  display: true,
+  anchor: "end",
+  align: (ctx) => (barFits(ctx) ? "start" : "end"),
+  offset: 6, clamp: true,
+  color: (ctx) => (barFits(ctx) ? (hexLum(ctx.dataset.backgroundColor) > 0.5 ? "#0a0a0a" : "#ffffff") : C.text),
+  font: { family: "Sora", weight: 700, size: 11 },
+  formatter: (v) => fmtNum(v),
+};
 // rótulo dentro das fatias (valor + %)
 const doughnutDL = {
   display: "auto", textAlign: "center",
@@ -466,7 +483,6 @@ function renderTopDemands(rows) {
     },
     options: {
       indexAxis: "y", responsive: true, maintainAspectRatio: false,
-      layout: { padding: { right: 46 } },
       plugins: { legend: { display: false }, tooltip: tt(), datalabels: barDL },
       scales: {
         x: { grid: { color: C.grid }, ticks: { precision: 0 } },
@@ -562,7 +578,6 @@ function renderChannelGrid() {
       },
       options: {
         indexAxis: "y", responsive: true, maintainAspectRatio: false,
-        layout: { padding: { right: 42 } },
         plugins: { legend: { display: false }, tooltip: tt(), datalabels: { ...barDL, font: { family: "Sora", weight: 700, size: 10.5 } } },
         scales: { x: { grid: { color: C.grid }, ticks: { precision: 0 } }, y: { grid: { display: false }, ticks: { color: C.text, font: { size: 11.5 } } } },
       },
