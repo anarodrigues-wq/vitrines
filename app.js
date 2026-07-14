@@ -322,9 +322,84 @@ function render() {
   renderSentiment(rows);
   renderChannel(rows);
   renderTimeline(rows);
+  renderMonthly(rows);   // top 5 demandas empilhadas por mes
   renderHeatmap();       // top 3 demandas x canais
   renderChannelGrid();   // usa filtro de período/sentimento, todos os canais
   renderActionPlan(rows);
+}
+
+// desenha o total no topo de cada barra empilhada
+const stackTotalPlugin = {
+  id: "stackTotal",
+  afterDatasetsDraw(chart) {
+    const { ctx, scales: { y } } = chart;
+    const meta0 = chart.getDatasetMeta(0);
+    if (!meta0 || !meta0.data.length) return;
+    for (let i = 0; i < meta0.data.length; i++) {
+      let sum = 0;
+      chart.data.datasets.forEach((ds, di) => { if (chart.isDatasetVisible(di)) sum += ds.data[i] || 0; });
+      if (!sum) continue;
+      ctx.save();
+      ctx.fillStyle = C.text;
+      ctx.font = "700 12px Sora";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(fmtNum(sum), meta0.data[i].x, y.getPixelForValue(sum) - 5);
+      ctx.restore();
+    }
+  },
+};
+
+// top 5 demandas empilhadas por mes
+function renderMonthly(rows) {
+  const monthDate = new Map(); // 'YYYY-MM' -> Date (para rotulo)
+  rows.forEach((r) => { const k = `${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, "0")}`; if (!monthDate.has(k)) monthDate.set(k, r.date); });
+  const monthKeys = [...monthDate.keys()].sort();
+  const labels = monthKeys.map((k) => { const d = monthDate.get(k); return d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "") + "/" + String(d.getFullYear()).slice(2); });
+  const idx = Object.fromEntries(monthKeys.map((k, i) => [k, i]));
+
+  const top5 = tagCounts(rows).slice(0, 5).map((t) => t[0]);
+  const top5set = new Set(top5);
+  const all = !TAG_LIST.length || filters.tags.size === TAG_LIST.length;
+  const series = {}; top5.forEach((t) => (series[t] = new Array(monthKeys.length).fill(0)));
+  const outros = new Array(monthKeys.length).fill(0);
+  rows.forEach((r) => {
+    const i = idx[`${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, "0")}`];
+    r.tags.forEach((t) => {
+      if (!all && !filters.tags.has(t)) return;
+      if (top5set.has(t)) series[t][i]++; else outros[i]++;
+    });
+  });
+
+  const palette = [C.green, C.purple, C.teal, C.amber, C.red];
+  const datasets = top5.map((t, i) => ({ label: t, data: series[t], backgroundColor: palette[i % palette.length], borderWidth: 0, stack: "s", maxBarThickness: 90 }));
+  datasets.push({ label: "Outros", data: outros, backgroundColor: "#6a6a6a", borderWidth: 0, stack: "s", maxBarThickness: 90 });
+
+  destroy("monthly");
+  charts.monthly = new Chart(document.getElementById("chartMonthly"), {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 22 } },
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { position: "bottom", labels: { color: C.text, usePointStyle: true, pointStyle: "circle", padding: 14, font: { size: 12 } } },
+        tooltip: { ...tt(), callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } },
+        datalabels: {
+          display: "auto",
+          color: (ctx) => (hexLum(ctx.dataset.backgroundColor) > 0.5 ? "#0a0a0a" : "#ffffff"),
+          font: { family: "Sora", weight: 700, size: 10.5 },
+          formatter: (v) => (v > 0 ? fmtNum(v) : ""),
+        },
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: C.muted } },
+        y: { stacked: true, grid: { color: C.grid }, ticks: { precision: 0 }, beginAtZero: true },
+      },
+    },
+    plugins: [stackTotalPlugin],
+  });
 }
 
 // heatmap: top 3 demandas (linhas) x canais (colunas), cor = volume
